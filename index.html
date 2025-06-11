@@ -168,18 +168,21 @@
     </footer>
     
     <!-- Audio Elements -->
-    <audio id="background-music" loop src="https://raw.githubusercontent.com/WeDoPiano/MusicalEssence/main/website.mp3"></audio>
+    <audio id="background-music" loop src="https://cdn.jsdelivr.net/gh/WeDoPiano/MusicalEssence@main/website.mp3"></audio>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
             // --- DATA ---
             const allMidiPacks = [
-                { id: 1, title: 'Avid - 86 Eighty Six',          art: getArtSVG(1), tags: ['Animenz'],        genre: 'Arrangements', fileUrl: 'https://raw.githubusercontent.com/WeDoPiano/MusicalEssence/main/Animenz%20-%20Avid%2086.mid' },
-                { id: 2, title: 'E.T. - Saying Goodbye',         art: getArtSVG(2), tags: ['Brett Mitchell'], genre: 'Arrangements', fileUrl: 'https://raw.githubusercontent.com/WeDoPiano/MusicalEssence/main/E.T.%20-%20Saying%20Goodbye.mid' },
-                { id: 3, title: 'E.T. the Extra-Terrestrial',    art: getArtSVG(3), tags: ['Brett Mitchell'], genre: 'Arrangements', fileUrl: 'https://raw.githubusercontent.com/WeDoPiano/MusicalEssence/main/E.T.%20the%20Extra-Terrestrial.mid' },
-                { id: 4, title: 'Blue - Yung Kai',               art: getArtSVG(4), tags: ['Birru'],          genre: 'Arrangements', fileUrl: 'https://raw.githubusercontent.com/WeDoPiano/MusicalEssence/main/Blue%20-%20Yung%20Kai.mid' },
-                { id: 5, title: 'Attack on Titan Main Theme',    art: getArtSVG(5), tags: ['Animenz'],        genre: 'Arrangements', fileUrl: 'https://raw.githubusercontent.com/WeDoPiano/MusicalEssence/main/Attack%20on%20Titan%20Main%20Theme%20-%20Animenz.mid' },
+                 { id: 1, title: 'Avid - 86 Eighty Six',          art: getArtSVG(1), tags: ['Animenz'],        genre: 'Arrangements', fileUrl: 'https://www.mediafire.com/file/zfdsd62rn4nbr45/Avid_-_86_Eighty_Six.mid/file' },
+                { id: 2, title: 'E.T. - Saying Goodbye',         art: getArtSVG(2), tags: ['Brett Mitchell'], genre: 'Arrangements', fileUrl: 'https://www.mediafire.com/file/p1zuq00w3c9qt0c/e.t_saying_goodbye.mid/file' },
+                { id: 3, title: 'E.T. the Extra-Terrestrial',    art: getArtSVG(3), tags: ['Brett Mitchell'], genre: 'Arrangements', fileUrl: 'https://www.mediafire.com/file/i8e5lx42lnpducv/E.T_the_extra_terrestrial.mid/file' },
+                { id: 4, title: 'Blue - Yung Kai',               art: getArtSVG(4), tags: ['Birru'],          genre: 'Arrangements', fileUrl: 'https://www.mediafire.com/file/snib1chbslpgqwb/Blue_-_Yung_Kai.mid/file' },
+                { id: 5, title: 'Attack on Titan Main Theme',    art: getArtSVG(5), tags: ['Animenz'],        genre: 'Arrangements', fileUrl: 'https://www.mediafire.com/file/o232iigh3lcyyip/Animenz_-_Attack_on_Titan_%2528Main_Theme%2529.mid/file' },
+                { id: 6, title: 'Chopin Etudes Reimagined',      art: getArtSVG(6), tags: ['Matt Herskowitz'],genre: 'Classical',    fileUrl: 'https://www.mediafire.com/file/05bj1wgvtp4yfum/Chopin_Etudes_Reimagined.mid/file' },
+                { id: 7, title: 'Piazzolla - Libertango',        art: getArtSVG(7), tags: ['Astor Piazzola'], genre: 'Classical',    fileUrl: 'https://www.mediafire.com/file/edc7gof8wu7egsd/Piazolla_-_Libertango.mid/file' },
+                { id: 8, title: 'Gershwin - Rhapsody in Blue',   art: getArtSVG(8), tags: ['Makoto Ozone'],   genre: 'Classical',    fileUrl: 'https://www.mediafire.com/file/y7nf3csf5dihjm3/Gershwin_-_Rhapsody_in_Blue.mid/file' },
             ];
 
             // --- STATE MANAGEMENT ---
@@ -223,33 +226,16 @@
             const handleUnlock = () => { window.open('https://discord.com/invite/Qxeu2yNQHB', '_blank'); localStorage.setItem('hasUnlockedMidis', 'true'); isUnlocked = true; closeModal(); updateDisplayedMidis(); };
 
             // --- DOWNLOAD HANDLER ---
-            const handleDownload = async (packId) => {
+            const handleDownload = (packId) => {
                 const pack = allMidiPacks.find(p => p.id === packId);
                 if (!pack || !pack.fileUrl) { 
                     console.error('Pack not found or missing file URL!');
                     return;
                 }
                 
-                // Fetch the file from the URL
-                const response = await fetch(pack.fileUrl);
-                const blob = await response.blob();
-
-                // Create a temporary link to trigger the download from the blob
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-a.style.display = 'none';
-                a.href = url;
-                
-                // Use the pack's title to create a clean, descriptive filename.
-                const fileName = `${pack.title.replace(/[\/\\?%*:|"<>]/g, '-')}.mid`;
-                a.download = fileName;
-                
-                document.body.appendChild(a);
-                a.click();
-                
-                // Clean up the temporary link and blob URL
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
+                // This simplified method creates a direct link and opens it in a new tab.
+                // MediaFire will then present the download page to the user.
+                window.open(pack.fileUrl, '_blank');
             };
 
             // --- AUDIO HANDLING ---
@@ -265,7 +251,12 @@ a.style.display = 'none';
                     if (hasInteracted) return;
                     hasInteracted = true;
                     if (backgroundMusic.paused && !backgroundMusic.muted) {
-                       backgroundMusic.play().catch(error => console.error("Autoplay was prevented.", error));
+                       const playPromise = backgroundMusic.play();
+                       if (playPromise !== undefined) {
+                           playPromise.catch(error => {
+                               console.error("Audio playback error:", error);
+                           });
+                       }
                     }
                 };
                 
@@ -291,7 +282,12 @@ a.style.display = 'none';
                 const searchTerm = searchInput.value.toLowerCase();
                 let filteredPacks = allMidiPacks;
                 if (activeFilter !== 'All') {
-                    filteredPacks = filteredPacks.filter(pack => pack.genre === activeFilter);
+                    // Make sure classical arrangements are shown in the 'Arrangements' tab as well.
+                    if (activeFilter === 'Arrangements') {
+                        filteredPacks = filteredPacks.filter(pack => pack.genre === 'Arrangements' || pack.genre === 'Classical');
+                    } else {
+                        filteredPacks = filteredPacks.filter(pack => pack.genre === activeFilter);
+                    }
                 }
                 if (searchTerm) {
                     filteredPacks = filteredPacks.filter(pack => pack.title.toLowerCase().includes(searchTerm));
@@ -359,6 +355,9 @@ a.style.display = 'none';
                     3: `<svg width="100%" height="100%" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#161B22"/><g transform="skewX(-15)"><rect x="50" y="50" width="10" height="100" fill="#F7B538"/><rect x="70" y="50" width="10" height="100" fill="#F7B538" opacity="0.8"/><rect x="90" y="50" width="10" height="100" fill="#F7B538" opacity="0.6"/><rect x="250" y="25" width="20" height="150" fill="#4A90E2"/></g></svg>`,
                     4: `<svg width="100%" height="100%" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#161B22"/><path d="M0 150 Q 100 100, 200 150 T 400 150" stroke="#F0F6FC" stroke-width="1" fill="none" opacity="0.5"/><path d="M0 160 Q 100 110, 200 160 T 400 160" stroke="#F7B538" stroke-width="2" fill="none"/></svg>`,
                     5: `<svg width="100%" height="100%" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#161B22"/><polyline points="20,180 80,40 140,160 200,60 260,140 320,80 380,120" stroke="#F7B538" stroke-width="3" fill="none"/></svg>`,
+                    6: `<svg width="100%" height="100%" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#161B22"/><path d="M20 50 H 380 V 150 H 20 Z" stroke="#4A90E2" stroke-width="2" fill="none"/><text x="200" y="110" font-family="serif" font-size="40" fill="#F0F6FC" text-anchor="middle">Chopin</text></svg>`,
+                    7: `<svg width="100%" height="100%" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#161B22"/><path d="M50 150 C 150 50, 250 50, 350 150" stroke="#F7B538" stroke-width="3" fill="none" stroke-dasharray="10 5"/></svg>`,
+                    8: `<svg width="100%" height="100%" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="200" fill="#161B22"/><path d="M20,100 C 80,20 120,180 200,100 S 280,20 380,100" stroke="#4A90E2" stroke-width="4" fill="none"/></svg>`,
                 };
                 return svgs[id] || svgs[1];
             }
